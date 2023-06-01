@@ -1,14 +1,14 @@
 from pydantic import BaseModel,EmailStr
 
 class UserRegisterModel(BaseModel):
-    fullname: str
+    name: str
     email: str
     password: str
 
     class Config:
         schema_extra = {
             "example": {
-                "fullname": "Rey Shazni",
+                "name": "Rey Shazni",
                 "email": "rey@gmail.com",
                 "password": "weakpassword"
             }

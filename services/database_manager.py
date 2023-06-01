@@ -14,5 +14,5 @@ db_host = config["DB_HOST"]
 db_port = int(config["DB_PORT"])
 db_database = config["DB_DATABASE"]
         
-db_engine  = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_database}"
+db_engine  = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_database}"
 dbInstance = DatabaseManager(db_engine=db_engine)
