@@ -1,0 +1,46 @@
+name: Build and Push to GCR
+
+on:
+  push:
+    branches:
+      - master
+      - staging
+
+env:
+  PROJECT_ID: wanderai-387006
+  GCR_REGISTRY: gcr.io
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure Docker
+        run: |
+          echo ${{ secrets.GCR_SERVICE_KEY }} | docker login -u _json_key --password-stdin https://$GCR_REGISTRY
+
+      - name: Build and Push Docker image
+        run: |
+          # Set image name based on branch
+          if [[ ${{ github.ref }} == 'refs/heads/master' ]]; then
+            IMAGE_NAME="be-master"
+          elif [[ ${{ github.ref }} == 'refs/heads/staging' ]]; then
+            IMAGE_NAME="be-staging"
+          else
+            echo "Unsupported branch, skipping image build and push."
+            exit 0
+          fi
+
+          # Build and push Docker image
+          docker build \
+            --tag $GCR_REGISTRY/$PROJECT_ID/$IMAGE_NAME \
+            --file Dockerfile \
+            .
+
+          docker push $GCR_REGISTRY/$PROJECT_ID/$IMAGE_NAME
