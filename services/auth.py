@@ -33,9 +33,9 @@ class AuthHandler():
             payload = jwt.decode(token,self.secret, algorithms=['HS256'])
             return payload['sub']
         except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=402, detail='Token expired')
+            raise HTTPException(status_code=402, message='Token expired')
         except jwt.InvalidTokenError:
-            raise HTTPException(status_code=402, detail='Invalid token')
+            raise HTTPException(status_code=402, message='Invalid token')
         
     def auth_wrapper(self, auth: HTTPAuthorizationCredentials = Security(security)):
         return self.decode_token(auth.credentials)
@@ -51,9 +51,9 @@ class JWTBearer(HTTPBearer):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer,self).__call__(request)
         if credentials:
             if not credentials.scheme == "Bearer":
-                raise HTTPException(status_code=403, detail="Scheme Invalid")
+                raise HTTPException(status_code=403, message="Scheme Invalid")
             decoded = self.authHandler.decode_token(credentials.credentials)
             if decoded is not None:
                 return decoded
-        raise HTTPException(status_code=403, detail='Invalid token')
+        raise HTTPException(status_code=403, message='Invalid token')
      

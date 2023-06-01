@@ -53,11 +53,11 @@ def updateBensin(updateBensinParam: UpdateBensin, Authorize: JWTBearer = Depends
     listJenisBensin = ['pertamax', 'pertalite', 'solar']
     
     if (updateBensinParam.hargaBaru < 1000):
-        raise HTTPException(status_code=405, detail="Masukkan harga baru dengan benar!")
+        raise HTTPException(status_code=405, message="Masukkan harga baru dengan benar!")
         return
     
     if (updateBensinParam.jenisBensin.lower() not in listJenisBensin):
-        raise HTTPException(status_code=405, detail="Jenis bensin tidak terdaftar!")
+        raise HTTPException(status_code=405, message="Jenis bensin tidak terdaftar!")
         return
 
     newBensin = {"jenisBensin": updateBensinParam.jenisBensin.lower(), "hargaBaru": updateBensinParam.hargaBaru}
@@ -68,7 +68,7 @@ def updateBensin(updateBensinParam: UpdateBensin, Authorize: JWTBearer = Depends
         dbInstance.conn.execute(query, newBensin)
         return {"message": "Harga Berhasil diperbarui!"}
     except:
-        raise HTTPException(status_code=406, detail="Update gagal, silakan coba lagi!")
+        raise HTTPException(status_code=406, message="Update gagal, silakan coba lagi!")
 
 # @event_router.post("/order")
 # def getPrice(alamatAwal: Alamat, alamatTujuan: Alamat, Authorize: JWTBearer = Depends(JWTBearer())):
@@ -110,7 +110,7 @@ def updateBensin(updateBensinParam: UpdateBensin, Authorize: JWTBearer = Depends
 #             "message": "order berhasil dibuat!"
 #     }
 #     except:
-#         raise HTTPException(status_code=406, detail="Order gagal, silakan coba lagi")
+#         raise HTTPException(status_code=406, message="Order gagal, silakan coba lagi")
 
 
 # @event_router.post("/get-price")

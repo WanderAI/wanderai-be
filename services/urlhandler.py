@@ -16,7 +16,7 @@ config = dotenv_values(".env")
 #         alamatDestination = destination.jalan + destination.kota
 
 #         if alamatDestination == alamatOrigin:
-#             raise HTTPException(status_code=406, detail="Alamat awal dan alamat tujuan tidak boleh sama!")
+#             raise HTTPException(status_code=406, message="Alamat awal dan alamat tujuan tidak boleh sama!")
 
 
 #         url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={alamatOrigin}&destinations={alamatDestination}&key={api_key}"
@@ -26,7 +26,7 @@ config = dotenv_values(".env")
 #         response = requests.request("GET", url, headers=headers, data=payload).json()
 
 #         if response["rows"][0]["elements"][0]["status"] == "NOT_FOUND":
-#             raise HTTPException(status_code=406, detail="Masukkan alamat dengan benar!")
+#             raise HTTPException(status_code=406, message="Masukkan alamat dengan benar!")
 
 #         return response
 
