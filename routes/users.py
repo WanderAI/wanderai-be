@@ -45,7 +45,8 @@ def register(inputUser: UserRegisterModel):
         token = AuthHandler().encode_token(newUser["name"])
         return {
             "data": {
-                "token": token
+                "token": token,
+                "uid": unique_id
             },
             "message": "Akun Berhasil Didaftarkan!",
         }
@@ -58,7 +59,7 @@ def register(inputUser: UserRegisterModel):
 
 @user_router.post('/login')
 def login(inputUser: UserLoginSchema):
-    users = dbInstance.conn.execute(text("SELECT email, password, name FROM user WHERE email=:email"), {"email": inputUser.email})
+    users = dbInstance.conn.execute(text("SELECT email, password, name, uid FROM user WHERE email=:email"), {"email": inputUser.email})
     for user in users:
         if not AuthHandler().verify_password(plain_password=inputUser.password, hashed_password=user[1]):
             return JSONResponse(status_code=401, content={"message": 'Email atau password salah!'})
@@ -69,7 +70,7 @@ def login(inputUser: UserLoginSchema):
             "data": {
                 "token": token,
                 "email": inputUser.email,
-                "uid": user[0]
+                "uid": user[3]
             },
             "message": f'login berhasil! Selamat datang, {firstName}!',
         }
