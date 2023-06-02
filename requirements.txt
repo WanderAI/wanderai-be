@@ -1,3 +1,5 @@
+wheel
+cffi
 fastapi==0.74.1
 pydantic==1.9.0
 PyJWT==2.3.0
