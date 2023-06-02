@@ -65,11 +65,11 @@ jobs:
           fi
 
       - name: Setup GKE
-      uses: google-github-actions/get-gke-credentials@db150f2cc60d1716e61922b832eae71d2a45938f
-      with:
-        cluster_name: ${{ env.CLUSTER_NAME }}
-        location: ${{ env.GKE_ZONE }}
-        credentials: ${{ secrets.GCP_CREDENTIALS }}
+        uses: google-github-actions/get-gke-credentials@db150f2cc60d1716e61922b832eae71d2a45938f
+        with:
+          cluster_name: ${{ env.CLUSTER_NAME }}
+          location: ${{ env.GKE_ZONE }}
+          credentials: ${{ secrets.GCP_CREDENTIALS }}
 
 
       - name: Deploy to GKE
