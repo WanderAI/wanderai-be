@@ -69,7 +69,7 @@ jobs:
         with:
           cluster_name: ${{ env.CLUSTER_NAME }}
           location: ${{ env.GKE_ZONE }}
-          credentials: ${{ secrets.GCP_CREDENTIALS }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
 
       - name: Deploy to GKE
