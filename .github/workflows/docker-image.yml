@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Setup ENV
-      - uses: danielr1996/envsubst-action@1.0.0
+        uses: danielr1996/envsubst-action@1.0.0
         env:
             PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
             GITHUB_RUN_ID: $GITHUB_RUN_ID
