@@ -1,10 +1,13 @@
-name: "Docker push and deploy app on Google Cloud Run"
+name: "Docker push to GCR"
 
 on:
   push:
     branches:
-      - master
       - staging
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
