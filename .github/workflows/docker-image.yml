@@ -37,3 +37,5 @@ jobs:
         fi
         
         gcloud beta builds triggers run ${{ secrets.GCP_BUILD_STAGING_TRIGGER_ID }} --tag=${IMAGE_NAME}
+    options:
+      logging: CLOUD_LOGGING_ONLY
