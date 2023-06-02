@@ -1,0 +1,39 @@
+name: GCP Cloud Build
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  job_id:
+    name: Trigger Google Cloud Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v0'
+      with:
+        credentials_json: '${{ secrets.GCR_SERVICE_KEY }}'
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v0'
+
+    - name: 'Use gcloud CLI'
+      run: 'gcloud info'
+
+    - name: 'Start Google Cloud Build trigger'
+      run: |
+        export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+        
+        # Set image name based on branch
+        if [ "${{ github.ref }}" == "refs/heads/staging" ]; then
+          IMAGE_NAME="be-staging"
+        elif [ "${{ github.ref }}" == "refs/heads/master" ]; then
+          IMAGE_NAME="be-production"
+        else
+          echo "Invalid branch. Skipping Google Cloud Build trigger."
+          exit 0
+        fi
+        
+        gcloud beta builds triggers run ${{ secrets.GCP_BUILD_STAGING_TRIGGER_ID }} --tag=${IMAGE_NAME}
