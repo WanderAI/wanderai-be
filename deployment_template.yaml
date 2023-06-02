@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: staging-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: staging-backend
+  template:
+    metadata:
+      labels:
+        app: staging-backend
+    spec:
+      containers:
+        - name: backend
+          image: gcr.io/${PROJECT_ID}/be-staging:${GITHUB_RUN_ID}
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_USER
+              value: "root"
+            - name: DB_PASSWORD
+              value: "wanderainihngab"
+            - name: DB_HOST
+              value: "34.101.159.179"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_DATABASE
+              value: "staging"
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: staging-backend-service
+spec:
+  selector:
+    app: staging-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: production-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: production-backend
+  template:
+    metadata:
+      labels:
+        app: production-backend
+    spec:
+      containers:
+        - name: backend
+          image: gcr.io/${PROJECT_ID}/be-production:${GITHUB_RUN_ID}
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_USER
+              value: "root"
+            - name: DB_PASSWORD
+              value: "wanderainihngab"
+            - name: DB_HOST
+              value: "34.101.159.179"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_DATABASE
+              value: "production"
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: production-backend-service
+spec:
+  selector:
+    app: production-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  tls:
+    - hosts:
+        - 34.110.150.72  # Replace with your reserved static IP
+      secretName: backend-tls
+  rules:
+    - host: 34.110.150.72  # Replace with your reserved static IP
+      http:
+        paths:
+          - path: /staging
+            pathType: Prefix
+            backend:
+              service:
+                name: staging-backend-service
+                port:
+                  number: 80
+          - path: /prod
+            pathType: Prefix
+            backend:
+              service:
+                name: production-backend-service
+                port:
+                  number: 80

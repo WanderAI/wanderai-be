@@ -17,10 +17,18 @@ jobs:
 
     env:
       IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}
+      CLUSTER_NAME: wanderai
+      NAMESPACE: deploy-gke
 
     steps:
-      - name: Print image tag
-        run: echo $GITHUB_RUN_ID
+      - name: Setup ENV
+      - uses: danielr1996/envsubst-action@1.0.0
+        env:
+            PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+            GITHUB_RUN_ID: $GITHUB_RUN_ID
+        with:
+          input: deployment_template.yaml
+          output: deployment.yaml
 
       - name: Login To GCP
         uses: google-github-actions/setup-gcloud@v0
@@ -51,10 +59,13 @@ jobs:
             docker push $IMAGE_NAME/be-staging:$GITHUB_RUN_ID
           fi
 
-      - name: Deploy Docker image
+      - name: Set up Kubernetes environment
+        uses: google-github-actions/setup-gke@v0.3.0
+        with:
+          cluster_name: ${{ env.CLUSTER_NAME }}
+          location: asia-southeast2
+          credentials: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Deploy to GKE
         run: |
-          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            gcloud run deploy be-production --image $IMAGE_NAME/be-production:$GITHUB_RUN_ID --allow-unauthenticated --port ${{ secrets.GCP_APP_PORT }} --region us-central1 --platform managed
-          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
-            gcloud run deploy be-staging --image $IMAGE_NAME/be-staging:$GITHUB_RUN_ID --allow-unauthenticated --port ${{ secrets.GCP_APP_PORT }} --region us-central1 --platform managed
-          fi
+            kubectl apply -f deployment.yaml -n $NAMESPACE
