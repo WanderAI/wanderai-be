@@ -54,7 +54,7 @@ jobs:
       - name: Deploy Docker image
         run: |
           if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            gcloud run deploy ${{ secrets.GCP_INSTANCE_ID }} --image $IMAGE_NAME/be-production:$GITHUB_RUN_ID --allow-unauthenticated --port ${{ secrets.GCP_APP_PORT }} --region us-central1 --platform managed
+            gcloud run deploy be-production --image $IMAGE_NAME/be-production:$GITHUB_RUN_ID --allow-unauthenticated --port ${{ secrets.GCP_APP_PORT }} --region us-central1 --platform managed
           elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
-            gcloud run deploy ${{ secrets.GCP_INSTANCE_ID }} --image $IMAGE_NAME/be-staging:$GITHUB_RUN_ID --allow-unauthenticated --port ${{ secrets.GCP_APP_PORT }} --region us-central1 --platform managed
+            gcloud run deploy be-staging --image $IMAGE_NAME/be-staging:$GITHUB_RUN_ID --allow-unauthenticated --port ${{ secrets.GCP_APP_PORT }} --region us-central1 --platform managed
           fi
