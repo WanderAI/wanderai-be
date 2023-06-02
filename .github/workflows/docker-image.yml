@@ -50,3 +50,11 @@ jobs:
           elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
             docker push $IMAGE_NAME/be-staging:$GITHUB_RUN_ID
           fi
+
+      - name: Push Docker image
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            docker push $IMAGE_NAME/be-production:$GITHUB_RUN_ID
+          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+            docker push $IMAGE_NAME/be-staging:$GITHUB_RUN_ID
+          fi
