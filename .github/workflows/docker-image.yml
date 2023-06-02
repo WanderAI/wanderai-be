@@ -27,7 +27,7 @@ jobs:
             PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
             GITHUB_RUN_ID: $GITHUB_RUN_ID
         with:
-          input: ./deployment_template.yaml
+          input: ./script/deployment_template.yaml
           output: ./deployment.yaml
 
       - name: Login To GCP
