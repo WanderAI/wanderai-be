@@ -1,5 +1,5 @@
 # Menginstall base image
-FROM python:3.8-alpine
+FROM python:3.11.3-bullseye
 
 # Mengganti workdir
 WORKDIR /app

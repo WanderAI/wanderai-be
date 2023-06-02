@@ -48,7 +48,7 @@ def register(inputUser: UserRegisterModel):
                 "token": token,
                 "uid": unique_id
             },
-            "message": "Akun Berhasil Didaftarkan!",
+            "message": "Success",
         }
     except exc.IntegrityError as e:
         error_msg = str(e)
@@ -72,6 +72,6 @@ def login(inputUser: UserLoginSchema):
                 "email": inputUser.email,
                 "uid": user[3]
             },
-            "message": f'login berhasil! Selamat datang, {firstName}!',
+            "message": 'Success',
         }
     return JSONResponse(status_code=401, content={"message": 'Email tidak terdaftar!'})
