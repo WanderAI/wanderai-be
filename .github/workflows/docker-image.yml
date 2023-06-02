@@ -21,13 +21,17 @@ jobs:
       NAMESPACE: deploy-gke
 
     steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          
       - name: Setup ENV
         uses: nowactions/envsubst@v1
         env:
             PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
             GITHUB_RUN_ID: $GITHUB_RUN_ID
         with:
-          input: ./script/deployment_template.yaml
+          input: ./deployment_template.yaml
           output: ./deployment.yaml
 
       - name: Login To GCP
