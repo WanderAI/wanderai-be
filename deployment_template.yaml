@@ -90,32 +90,27 @@ spec:
       targetPort: 8000
   type: ClusterIP
 ---
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: backend-ingress
-#   annotations:
-#     kubernetes.io/ingress.class: "nginx"
-# spec:
-#   tls:
-#     - hosts:
-#         - 34.110.150.72  # Replace with your reserved static IP
-#       secretName: backend-tls
-#   rules:
-#     - host: 34.110.150.72  # Replace with your reserved static IP
-#       http:
-#         paths:
-#           - path: /staging
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: staging-backend-service
-#                 port:
-#                   number: 80
-#           - path: /prod
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: production-backend-service
-#                 port:
-#                   number: 80
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /production/backend
+            pathType: Prefix
+            backend:
+              service:
+                name: production-backend-service
+                port:
+                  number: 80
+          - path: /staging/backend
+            pathType: Prefix
+            backend:
+              service:
+                name: staging-backend-service
+                port:
+                  number: 80
