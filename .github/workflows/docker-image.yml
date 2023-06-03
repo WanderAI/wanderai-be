@@ -72,8 +72,8 @@ jobs:
       - name: Setup GKE
         uses: 'google-github-actions/get-gke-credentials@v1'
         with:
-          cluster_name: $CLUSTER_NAME
-          location: 'asia-southeast2'
+          cluster_name: ${{ env.CLUSTER_NAME }}
+          location: ${{ env.GKE_ZONE }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
 
