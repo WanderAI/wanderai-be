@@ -69,6 +69,7 @@ jobs:
         with:
           cluster_name: $CLUSTER_NAME
           location: 'asia-southeast2'
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
 
       - name: Deploy to GKE
