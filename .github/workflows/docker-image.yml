@@ -33,14 +33,13 @@ jobs:
             GITHUB_RUN_ID: $GITHUB_RUN_ID
         with:
           input: ./deployment_template.yaml
-          output: ./deployment.yaml
+          output: ./deployment.yamls
 
-      - name: Login To GCP
-        uses: google-github-actions/setup-gcloud@v0
+      - name: auth GCP
+        uses: google-github-actions/auth@v1
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_email: ${{ secrets.GCP_EMAIL }}
-          service_account_key: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
 
       - name: Configure Docker
         run: gcloud auth configure-docker --quiet
