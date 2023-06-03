@@ -42,11 +42,6 @@ jobs:
           service_account_email: ${{ secrets.GCP_EMAIL }}
           service_account_key: ${{ secrets.GCP_CREDENTIALS }}
 
-      - name: Auth GCP
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
       - name: Configure Docker
         run: gcloud auth configure-docker --quiet
 
@@ -69,6 +64,11 @@ jobs:
             docker push $IMAGE_NAME/be-staging:$GITHUB_RUN_ID
           fi
 
+      - name: Auth GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          
       - name: Setup GKE
         uses: 'google-github-actions/get-gke-credentials@v1'
         with:
