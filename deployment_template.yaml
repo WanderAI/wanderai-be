@@ -93,24 +93,27 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: backend-ingress
+  name: wanderai
+  namespace: production
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.global-static-ip-name: wanderai
+    kubernetes.io/ingress.allow-http: "false"
+    networking.gke.io/managed-certificates: wanderai
 spec:
   rules:
     - http:
         paths:
-          - path: /production/backend
-            pathType: Prefix
-            backend:
-              service:
-                name: production-backend-service
-                port:
-                  number: 80
-          - path: /staging/backend
-            pathType: Prefix
-            backend:
-              service:
-                name: staging-backend-service
-                port:
-                  number: 80
+        - path: /stg/be
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: staging-backend-service
+              port: 
+                number: 8000
+        - path: /prod/be
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: production-backend-service
+              port: 
+                number: 8000
