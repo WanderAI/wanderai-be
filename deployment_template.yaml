@@ -96,7 +96,7 @@ metadata:
   name: wanderai
   annotations:
     kubernetes.io/ingress.global-static-ip-name: wanderai
-    kubernetes.io/ingress.allow-http: "false"
+    kubernetes.io/ingress.allow-http: "true"
     networking.gke.io/managed-certificates: wanderai
 spec:
   rules:
