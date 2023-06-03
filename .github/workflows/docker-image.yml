@@ -22,9 +22,8 @@ jobs:
       GKE_ZONE: asia-southeast2
 
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
+      - name: Checkout
+        uses: actions/checkout@v2
           
       - name: Setup ENV
         uses: nowactions/envsubst@v1
@@ -76,7 +75,9 @@ jobs:
           location: ${{ env.GKE_ZONE }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
+      - name: Print deployment.yaml
+        run: cat ./deployment.yaml
 
       - name: Deploy to GKE
         run: |
-          kubectl apply -f ./deployment.yaml
+          kubectl apply -f deployment.yaml
