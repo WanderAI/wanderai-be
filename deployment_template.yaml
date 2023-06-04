@@ -97,11 +97,14 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     kubernetes.io/ingress.global-static-ip-name: wanderai
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^(/stg-be)$ $1/ redirect;
 spec:
   rules:
   - http:
       paths:
-      - path: /stg/be(/|$)(.*)
+      - path: /stg-be(/|$)(.*)
+        pathType: Prefix
         backend:
           service:
             name: staging-backend-service
