@@ -101,11 +101,10 @@ spec:
   rules:
   - http:
       paths:
-      - path: /stg/be/
-        pathType: Prefix
+      - path: /stg/be/*
+        pathType: ImplementationSpecific
         backend:
           service:
             name: staging-backend-service
             port:
               number: 8000
-        rewriteTarget: /
