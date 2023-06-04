@@ -90,19 +90,18 @@ spec:
       targetPort: 8000
   type: ClusterIP
 ---
-apiVersion: networking.k8s.io/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: my-ingress
   annotations:
-    kubernetes.io/ingress.global-static-ip-name: wanderai
     nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.global-static-ip-name: wanderai
 spec:
   rules:
   - http:
       paths:
       - path: /stg/be(/|$)(.*)
-        pathType: ImplementationSpecific
         backend:
           service:
             name: staging-backend-service
