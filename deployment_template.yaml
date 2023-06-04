@@ -100,8 +100,8 @@ spec:
   rules:
   - http:
       paths:
-      - path: /stg/be/*
-        pathType: ImplementationSpecific
+      - path: /stg/be/
+        pathType: Prefix
         backend:
           service:
             name: staging-backend-service
