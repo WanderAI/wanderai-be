@@ -96,6 +96,7 @@ metadata:
   name: my-ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: wanderai
+    nginx.ingress.kubernetes.io/rewrite-target:  /
 spec:
   rules:
   - http:
