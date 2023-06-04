@@ -90,30 +90,53 @@ spec:
       targetPort: 8000
   type: ClusterIP
 ---
-apiVersion: networking.k8s.io/v1
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: wanderai
+#   annotations:
+#     kubernetes.io/ingress.global-static-ip-name: wanderai
+#     kubernetes.io/ingress.allow-http: "true"
+#     nginx.ingress.kubernetes.io/use-regex: "true"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - http:
+#         paths:
+#         - path: /stg/be/*
+#           pathType: ImplementationSpecific
+#           backend:
+#             service:
+#               name: staging-backend-service
+#               port: 
+#                 number: 8000
+#         - path: /prod/be/*
+#           pathType: ImplementationSpecific
+#           backend:
+#             service:
+#               name: production-backend-service
+#               port: 
+#                 number: 8000
+
+apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: wanderai
   annotations:
     kubernetes.io/ingress.global-static-ip-name: wanderai
-    kubernetes.io/ingress.allow-http: "true"
-    nginx.ingress.kubernetes.io/use-regex: "true"
+  labels:
+    app: staging-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-replicaset-service
+  labels:
+    app: staging-backend
 spec:
-  ingressClassName: nginx
-  rules:
-    - http:
-        paths:
-        - path: /stg/be/.*
-          pathType: Prefix
-          backend:
-            service:
-              name: staging-backend-service
-              port: 
-                number: 8000
-        - path: /prod/be/.*
-          pathType: Prefix
-          backend:
-            service:
-              name: production-backend-service
-              port: 
-                number: 8000
+  selector:
+    app: staging-backend
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
