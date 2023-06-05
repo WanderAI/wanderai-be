@@ -90,27 +90,54 @@ spec:
       targetPort: 8000
   type: ClusterIP
 ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: my-ingress
+#   annotations:
+#     kubernetes.io/ingress.global-static-ip-name: wanderai
+#     nginx.ingress.kubernetes.io/enable-cors: "true"
+#     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+#     nginx.ingress.kubernetes.io/cors-allow-origin: '$http_origin'
+#     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+#     nginx.ingress.kubernetes.io/rewrite-target: /$2
+#     nginx.ingress.kubernetes.io/use-regex: "true"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#   - http:
+#       paths:
+#       - path: /stg/be(/|$)(.*)
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: staging-backend-service
+#             port:
+#               number: 8000
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: my-ingress
+  name: wanderai
   annotations:
     kubernetes.io/ingress.global-static-ip-name: wanderai
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
-    nginx.ingress.kubernetes.io/cors-allow-origin: '$http_origin'
-    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/use-regex: "true"
+    kubernetes.io/ingress.allow-http: "false"
+    networking.gke.io/managed-certificates: wanderai
 spec:
-  ingressClassName: nginx
   rules:
-  - http:
-      paths:
-      - path: /stg/be(/|$)(.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: staging-backend-service
-            port:
-              number: 8000
+    - http:
+        paths:
+        - path: /stg/be
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: staging-backend-service
+              port: 
+                number: 8000
+        - path: /prod/be
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: production-backend-service
+              port: 
+                number: 8000
