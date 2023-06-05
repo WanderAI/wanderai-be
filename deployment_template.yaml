@@ -95,6 +95,7 @@ kind: Ingress
 metadata:
   name: my-ingress
   annotations:
+    kubernetes.io/ingress.class: nginx
     kubernetes.io/ingress.global-static-ip-name: wanderai
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
@@ -103,7 +104,6 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
-  ingressClassName: nginx
   rules:
   - http:
       paths:
