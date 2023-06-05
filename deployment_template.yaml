@@ -121,20 +121,20 @@ metadata:
   name: wanderai
   annotations:
     kubernetes.io/ingress.global-static-ip-name: wanderai
-    kubernetes.io/ingress.allow-http: "false"
-    networking.gke.io/managed-certificates: wanderai
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
     - http:
         paths:
-        - path: /stg/be
+        - path: /stg/be(/|$)(.*)
           pathType: ImplementationSpecific
           backend:
             service:
               name: staging-backend-service
               port: 
                 number: 8000
-        - path: /prod/be
+        - path: /prod/be(/|$)(.*)
           pathType: ImplementationSpecific
           backend:
             service:
