@@ -93,9 +93,15 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: my-ingress
+  name: ip-ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: wanderai
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: routing-ingress
+  annotations:
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-origin: '$http_origin'
