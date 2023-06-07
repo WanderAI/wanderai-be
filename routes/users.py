@@ -46,7 +46,9 @@ def register(inputUser: UserRegisterModel):
         return {
             "data": {
                 "token": token,
-                "uid": unique_id
+                "uid": unique_id,
+                "name": inputUser.name,
+                "email": inputUser.email  # Add email to the response
             },
             "message": "Success",
         }
@@ -57,8 +59,14 @@ def register(inputUser: UserRegisterModel):
         else:
             return JSONResponse(status_code=406, content={"message": error_msg})
 
+
 @user_router.post('/login')
 def login(inputUser: UserLoginSchema):
+    # Validate email format
+    email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    if not re.match(email_regex, inputUser.email):
+        return JSONResponse(status_code=405, content={"message": "Format email tidak valid"})
+
     users = dbInstance.conn.execute(text("SELECT email, password, name, uid FROM user WHERE email=:email"), {"email": inputUser.email})
     for user in users:
         if not AuthHandler().verify_password(plain_password=inputUser.password, hashed_password=user[1]):
@@ -70,8 +78,10 @@ def login(inputUser: UserLoginSchema):
             "data": {
                 "token": token,
                 "email": inputUser.email,
-                "uid": user[3]
+                "uid": user[3],
+                "name": user[2]  # Add name to the response
             },
             "message": 'Success',
         }
     return JSONResponse(status_code=401, content={"message": 'Email tidak terdaftar!'})
+
