@@ -109,4 +109,3 @@ spec:
             name: staging-backend-service
             port:
               number: 8000
----
