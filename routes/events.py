@@ -15,7 +15,7 @@ event_router = APIRouter(
 from fastapi import HTTPException
 
 @event_router.post("/get-format")
-async def getFormat(file: UploadFile = File(...)):
+async def getFormat(file: UploadFile = File(...), Authorize: JWTBearer = Depends(JWTBearer())):
     file_info = {}
 
     # Read the file content
