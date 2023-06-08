@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 import uvicorn
 from routes.events import event_router
 from routes.users import user_router
-from models.events import Alamat
+# from models.events import Alamat
 
 app = FastAPI()
 
