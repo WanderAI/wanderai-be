@@ -96,13 +96,12 @@ metadata:
   name: ip-service-ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: wanderai
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
   - http:
       paths:
-      - path: /stg/be(/|$)(.*)
+      - path: /stg/be/*
         pathType: ImplementationSpecific
         backend:
           service:
