@@ -101,7 +101,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /stg/be/*
+      - path: /stg/be
         pathType: ImplementationSpecific
         backend:
           service:
