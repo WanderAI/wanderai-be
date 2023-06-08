@@ -9,11 +9,11 @@ class DatabaseManager:
 
 import os
 
-db_user = os.getenv("DB_USER")
-db_password = os.getenv("DB_PASSWORD")
-db_host = os.getenv("DB_HOST")
-db_port = os.getenv("DB_PORT")
-db_database = os.getenv("DB_DATABASE")
+db_user = "root"
+db_password = "wanderainihngab"
+db_host = "34.101.159.179"
+db_port = "3306"
+db_database = "staging"
 
 db_engine = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_database}"
 dbInstance = DatabaseManager(db_engine=db_engine)

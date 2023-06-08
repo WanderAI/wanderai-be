@@ -1,5 +1,5 @@
 # Menginstall base image
-FROM python:3.11.3-bullseye
+FROM python:3.9-buster
 
 # Mengganti workdir
 WORKDIR /app

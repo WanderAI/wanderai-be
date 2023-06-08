@@ -1,0 +1,112 @@
+name: "Docker push to GCR and deploy to Cloud Run"
+
+on:
+  push:
+    branches:
+      - staging
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Docker Image to Cloud Run
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}
+      GCR_TAG: ${{ github.run_id }}
+      SERVICE_NAME: ${{ github.ref == 'refs/heads/master' && 'be-production' || 'be-staging' }}
+      REGION: asia-southeast2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup GCP
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_email: ${{ secrets.GCP_EMAIL }}
+          service_account_key: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build and Push Docker image
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            docker build . -t $IMAGE_NAME/be-production:${GCR_TAG}
+            docker push $IMAGE_NAME/be-production:${GCR_TAG}
+          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+            docker build . -t $IMAGE_NAME/be-staging:${GCR_TAG}
+            docker push $IMAGE_NAME/be-staging:${GCR_TAG}
+          fi
+
+      - name: Auth GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/be-${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}:${GCR_TAG} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --min-instances=${{ github.ref == 'refs/heads/master' && '1' || '0' }} \
+            --max-instances=${{ github.ref == 'refs/heads/master' && '5' || '1' }} \
+            --port 8000
+
+  # deploy-gke:
+  #   name: Deploy to GKE
+  #   if: "!contains(github.event.head_commit.message, 'skip ci')"
+  #   needs: build
+  #   runs-on: ubuntu-latest
+
+  #   env:
+  #     CLUSTER_NAME: wanderai
+  #     NAMESPACE: deploy-gke
+  #     GKE_ZONE: asia-southeast2
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+
+  #     - name: Setup ENV
+  #       uses: nowactions/envsubst@v1
+  #       env:
+  #         PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  #         GITHUB_RUN_ID: ${{ needs.build.outputs.GCR_TAG }}
+  #       with:
+  #         input: ./deployment_template.yaml
+  #         output: ./deployment.yaml
+
+  #     - name: Setup GCP
+  #       uses: google-github-actions/setup-gcloud@v0
+  #       with:
+  #         project_id: ${{ secrets.GCP_PROJECT_ID }}
+  #         service_account_email: ${{ secrets.GCP_EMAIL }}
+  #         service_account_key: ${{ secrets.GCP_CREDENTIALS }}
+
+  #     - name: Auth GCP
+  #       uses: google-github-actions/auth@v1
+  #       with:
+  #         credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+  #     - name: Setup GKE
+  #       uses: google-github-actions/get-gke-credentials@v1
+  #       with:
+  #         cluster_name: ${{ env.CLUSTER_NAME }}
+  #         location: ${{ env.GKE_ZONE }}
+  #         project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+  #     - name: Print deployment.yaml
+  #       run: cat ./deployment.yaml
+
+  #     - name: Deploy to GKE
+  #       run: |
+  #         kubectl apply -f deployment.yaml

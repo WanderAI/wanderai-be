@@ -17,3 +17,5 @@ cryptography
 urllib3==1.26.6 
 pytz
 bcrypt
+pillow
+python-multipart
