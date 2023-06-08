@@ -57,6 +57,8 @@ jobs:
             --platform managed \
             --region ${{ env.REGION }} \
             --allow-unauthenticated \
+            --min-instances=${{ github.ref == 'refs/heads/master' && '1' || '0' }} \
+            --max-instances=${{ github.ref == 'refs/heads/master' && '5' || '1' }} \
             --port 8000
 
   # deploy-gke:
