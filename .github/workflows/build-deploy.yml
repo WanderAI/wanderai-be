@@ -13,7 +13,7 @@ on:
 jobs:
   build-and-deploy:
     name: Build and Deploy Docker Image to Cloud Run
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == false
     runs-on: ubuntu-latest
 
     env:
