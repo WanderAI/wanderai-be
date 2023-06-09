@@ -16,33 +16,39 @@ from fastapi import HTTPException
 
 @event_router.post("/get-format")
 async def getFormat(file: UploadFile = File(...), Authorize: JWTBearer = Depends(JWTBearer())):
-    file_info = {}
-
-    # Read the file content
-    content = await file.read()
-
     try:
-        # Open the file using PIL library
-        image = Image.open(io.BytesIO(content))
+        # Read the file content
+        content = await file.read()
 
-        # Get the format (JPEG or PNG)
-        file_info["format"] = image.format
+        try:
+            # Open the file using PIL library
+            image = Image.open(io.BytesIO(content))
 
-        # Get the file size in megabytes (MB)
-        file_info["file_size"] = len(content) / (1024 * 1024)
+            # Get the format (JPEG or PNG)
+            file_info = {
+                "format": image.format,
+                "file_size": len(content) / (1024 * 1024),
+                "filename": file.filename
+            }
 
-        # Get the file name
-        file_info["filename"] = file.filename
+            # Set the success message
+            message = "success"
+            return {
+                "message": message,
+                "data": file_info
+            }
+        except OSError:
+            # Raise ValueError if the file is not an image
+            raise ValueError("File is not an image")
 
-        # Set the success message
-        message = "success"
-        return {
-            "message": message,
-            "data": file_info
-        }
-    except OSError:
-        # Set the error message
-        return JSONResponse(status_code=401, content={"message": "File bukan image!"})
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"message": str(e)})
+
+    except HTTPException as e:
+        return JSONResponse(status_code=e.status_code, content={"message": e.detail})
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": str(e)})
 
 
 

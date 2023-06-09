@@ -27,3 +27,17 @@ class UserLoginSchema(BaseModel):
         }
         
 users = []
+
+class resetPasswordSchema(BaseModel):
+    oldPassword: str
+    newPassword: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "oldPassword": "weakpassword",
+                "newPassword": "newpassword"
+            }
+        }
+        
+users = []

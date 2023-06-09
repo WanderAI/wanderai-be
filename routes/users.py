@@ -2,8 +2,8 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, Request, status
 from fastapi import FastAPI, Body
 from fastapi.responses import JSONResponse
-from models.users import UserRegisterModel, UserLoginSchema, users
-from services.auth import AuthHandler
+from models.users import UserRegisterModel, UserLoginSchema, users, resetPasswordSchema
+from services.auth import AuthHandler, JWTBearer
 from services.database_manager import dbInstance
 from sqlalchemy import text, exc
 import re
@@ -17,15 +17,15 @@ user_router = APIRouter(
 @user_router.post('/register', status_code=201)
 def register(inputUser: UserRegisterModel):
     if len(inputUser.email) <= 3:
-        return JSONResponse(status_code=405, content={"message": "Email harus memiliki minimal 4 karakter"})
+        return JSONResponse(status_code=400, content={"message": "Email harus memiliki minimal 4 karakter"})
     
     if len(inputUser.password) <= 5:
-        return JSONResponse(status_code=405, content={"message": "Password harus memiliki minimal 6 karakter"})
+        return JSONResponse(status_code=400, content={"message": "Password harus memiliki minimal 6 karakter"})
 
     # Validate email format
     email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     if not re.match(email_regex, inputUser.email):
-        return JSONResponse(status_code=405, content={"message": "Format email tidak valid"})
+        return JSONResponse(status_code=400, content={"message": "Format email tidak valid"})
 
     unique_id = str(uuid4())
 
@@ -42,7 +42,7 @@ def register(inputUser: UserRegisterModel):
     
     try:
         dbInstance.conn.execute(query, newUser)
-        token = AuthHandler().encode_token(newUser["name"])
+        token = AuthHandler().encode_token(unique_id)
         return {
             "data": {
                 "token": token,
@@ -55,9 +55,9 @@ def register(inputUser: UserRegisterModel):
     except exc.IntegrityError as e:
         error_msg = str(e)
         if "Duplicate entry" in error_msg and "email" in error_msg:
-            return JSONResponse(status_code=406, content={"message": "Email sudah terdaftar"})
+            return JSONResponse(status_code=400, content={"message": "Email sudah terdaftar"})
         else:
-            return JSONResponse(status_code=406, content={"message": error_msg})
+            return JSONResponse(status_code=400, content={"message": error_msg})
 
 
 @user_router.post('/login')
@@ -65,15 +65,15 @@ def login(inputUser: UserLoginSchema):
     # Validate email format
     email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     if not re.match(email_regex, inputUser.email):
-        return JSONResponse(status_code=405, content={"message": "Format email tidak valid"})
+        return JSONResponse(status_code=400, content={"message": "Format email tidak valid"})
 
     users = dbInstance.conn.execute(text("SELECT email, password, name, uid FROM user WHERE email=:email"), {"email": inputUser.email})
     for user in users:
         if not AuthHandler().verify_password(plain_password=inputUser.password, hashed_password=user[1]):
-            return JSONResponse(status_code=401, content={"message": 'Email atau password salah!'})
+            return JSONResponse(status_code=400, content={"message": 'Email atau password salah!'})
         name = user[2]
         firstName = name.split()[0]
-        token = AuthHandler().encode_token(user[2])
+        token = AuthHandler().encode_token(user[3])
         return {
             "data": {
                 "token": token,
@@ -83,5 +83,21 @@ def login(inputUser: UserLoginSchema):
             },
             "message": 'Success',
         }
-    return JSONResponse(status_code=401, content={"message": 'Email tidak terdaftar!'})
+    return JSONResponse(status_code=400, content={"message": 'Email tidak terdaftar!'})
+
+@user_router.post('/reset-password')
+def login(inputUser: resetPasswordSchema, user_id: str = Depends(JWTBearer())):
+
+    hashed_new_password = AuthHandler().get_password_hash(inputUser.newPassword)
+
+    users = dbInstance.conn.execute(text("SELECT email, password, name, uid FROM user WHERE uid=:uid"), {"uid": user_id})
+    for user in users:
+        if not AuthHandler().verify_password(plain_password=inputUser.oldPassword, hashed_password=user[1]):
+            return JSONResponse(status_code=400, content={"message": 'Password salah!'})
+        update_query = text("UPDATE user SET password=:password WHERE uid=:uid")
+        dbInstance.conn.execute(update_query, {"password": hashed_new_password, "uid": user_id})
+        return {
+            "message": 'Success',
+        }
+    return JSONResponse(status_code=400, content={"message": 'Email tidak terdaftar!'})
 
