@@ -2,8 +2,8 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, Request, status
 from fastapi import FastAPI, Body
 from fastapi.responses import JSONResponse
-from models.users import UserRegisterModel, UserLoginSchema, users
-from services.auth import AuthHandler
+from models.users import UserRegisterModel, UserLoginSchema, users, resetPasswordSchema
+from services.auth import AuthHandler, JWTBearer
 from services.database_manager import dbInstance
 from sqlalchemy import text, exc
 import re
@@ -42,7 +42,7 @@ def register(inputUser: UserRegisterModel):
     
     try:
         dbInstance.conn.execute(query, newUser)
-        token = AuthHandler().encode_token(newUser["name"])
+        token = AuthHandler().encode_token(unique_id)
         return {
             "data": {
                 "token": token,
@@ -73,7 +73,7 @@ def login(inputUser: UserLoginSchema):
             return JSONResponse(status_code=400, content={"message": 'Email atau password salah!'})
         name = user[2]
         firstName = name.split()[0]
-        token = AuthHandler().encode_token(user[2])
+        token = AuthHandler().encode_token(user[3])
         return {
             "data": {
                 "token": token,
@@ -81,6 +81,22 @@ def login(inputUser: UserLoginSchema):
                 "uid": user[3],
                 "name": user[2]  # Add name to the response
             },
+            "message": 'Success',
+        }
+    return JSONResponse(status_code=400, content={"message": 'Email tidak terdaftar!'})
+
+@user_router.post('/reset-password')
+def login(inputUser: resetPasswordSchema, user_id: str = Depends(JWTBearer())):
+
+    hashed_new_password = AuthHandler().get_password_hash(inputUser.newPassword)
+
+    users = dbInstance.conn.execute(text("SELECT email, password, name, uid FROM user WHERE uid=:uid"), {"uid": user_id})
+    for user in users:
+        if not AuthHandler().verify_password(plain_password=inputUser.oldPassword, hashed_password=user[1]):
+            return JSONResponse(status_code=400, content={"message": 'Password salah!'})
+        update_query = text("UPDATE user SET password=:password WHERE uid=:uid")
+        dbInstance.conn.execute(update_query, {"password": hashed_new_password, "uid": user_id})
+        return {
             "message": 'Success',
         }
     return JSONResponse(status_code=400, content={"message": 'Email tidak terdaftar!'})
