@@ -8,14 +8,12 @@ on:
   pull_request:
     branches:
       - master
-    types:
-      - opened
-      - synchronize
+    types: [closed]
 
 jobs:
   build-and-deploy:
     name: Build and Deploy Docker Image to Cloud Run
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     env:
