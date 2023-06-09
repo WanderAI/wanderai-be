@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine, text
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
 
 load_dotenv()
+config = dotenv_values(".env")
 
 class DatabaseManager:
     def __init__(self, db_engine: str) -> None:
@@ -9,11 +10,11 @@ class DatabaseManager:
 
 import os
 
-db_user = "root"
-db_password = "wanderainihngab"
-db_host = "34.101.159.179"
-db_port = "3306"
-db_database = "staging"
+db_user = config["DB_USER"]
+db_password = config["DB_PASSWORD"]
+db_host = config["DB_HOST"]
+db_port = int(config["DB_PORT"])
+db_database = config["DB_DATABASE"]
 
 db_engine = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_database}"
 dbInstance = DatabaseManager(db_engine=db_engine)
