@@ -246,7 +246,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
         return JSONResponse(status_code=500, content={"message": str(e)})
 
 
-@event_router.get("/get-list-recommendation-history")
+@event_router.get("/list-recommendation-history")
 async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
     try:
         query = db.collection('user_recommendation').where("user_id", "==", user_id)
@@ -267,7 +267,7 @@ async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
 
-@event_router.get("/get-recommendation-detail/{doc_id}")
+@event_router.get("/recommendation-detail/{doc_id}")
 async def getRecommendationHistory(doc_id, Authorize: JWTBearer = Depends(JWTBearer())):
     try:
         # Get the Firestore document with the specified ID
