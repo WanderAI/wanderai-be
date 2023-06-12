@@ -22,45 +22,20 @@ class Response(BaseModel):
 class Request(BaseModel):
     imageFile: bytes
 
-# Contoh penggunaan
-request_data = {
-    "imageFile": b"<binary_file_data>"
-}
+class ReccomendRequest(BaseModel):
+    query: str
+    city: str
+    n_days: int
+    n_people: int
+    cost: int
 
-response_data = {
-    "confidence_percent": 0.85,
-    "place": {
-        "nama": "Bandung",
-        "summary": "Kota di Jawa Barat, Indonesia",
-        "rating_tourism": 4.2
-    },
-    "nearest_restaurants": [
-        {
-            "nama_restoran": "Restoran A",
-            "jarak_dari_tempat_meter": 200,
-            "kategori_harga": 2,
-            "rating_restaurant": 4.5
-        },
-        {
-            "nama_restoran": "Restoran B",
-            "jarak_dari_tempat_meter": 350,
-            "kategori_harga": 3,
-            "rating_restaurant": 4.2
+    class Config:
+        schema_extra = {
+            "example": {
+                "query": "Tempat untuk menikmati suasana alam",
+                "city": "Bandung",
+                "n_days": 5,
+                "n_people": 2,
+                "cost": 3
+            }
         }
-    ],
-    "important_unique_facts": [
-        "Bandung adalah kota kreatif",
-        "Terkenal dengan makanan kulinernya"
-    ],
-    "sejarah": "Bandung didirikan pada tahun 1488 oleh Raja Jayadewata"
-}
-
-request_model = Request(**request_data)
-response_model = Response(**response_data)
-
-print(request_model.imageFile)
-print(response_model.confidence_percent)
-print(response_model.place)
-print(response_model.nearest_restaurants)
-print(response_model.important_unique_facts)
-print(response_model.sejarah)
