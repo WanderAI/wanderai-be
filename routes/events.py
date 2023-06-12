@@ -60,6 +60,8 @@ def sanitize_objects_list(obj_list):
             sanitized_obj["city"] = obj["city"]
         if "date_start" in obj:
             sanitized_obj["date_start"] = obj["date_start"]
+        if "date_end" in obj:
+            sanitized_obj["date_end"] = obj["date_end"]
         sanitized_list.append(sanitized_obj)
     return sanitized_list
 
