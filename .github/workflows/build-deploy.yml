@@ -38,6 +38,14 @@ jobs:
           input: ./.env.example
           output: ./.env
 
+      - name: Setup Firebase Key
+        uses: nowactions/envsubst@v1
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
+        with:
+          input: ./serviceAccountKey.template
+          output: ./serviceAccountKey.json
+
       - name: Setup GCP
         uses: google-github-actions/setup-gcloud@v0
         with:
