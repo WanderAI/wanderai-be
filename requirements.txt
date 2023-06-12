@@ -19,3 +19,5 @@ pytz
 bcrypt
 pillow
 python-multipart
+firebase_admin
+google.cloud
