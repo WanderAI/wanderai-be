@@ -1,5 +1,6 @@
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from datetime import datetime
 
 class Restaurant(BaseModel):
     nama_restoran: str
@@ -22,7 +23,8 @@ class Request(BaseModel):
 class ReccomendRequest(BaseModel):
     query: str
     city: str
-    n_days: int
+    day_start: str = Field(..., example="01/06/2023", description="Format: dd/mm/yyyy")
+    day_end: str = Field(..., example="05/06/2023", description="Format: dd/mm/yyyy")
     n_people: int
     cost: int
 
@@ -31,7 +33,8 @@ class ReccomendRequest(BaseModel):
             "example": {
                 "query": "Tempat untuk menikmati suasana alam",
                 "city": "Bandung",
-                "n_days": 5,
+                "day_start": "01/06/2023",
+                "day_end": "05/06/2023",
                 "n_people": 2,
                 "cost": 3
             }
