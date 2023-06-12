@@ -1,8 +1,5 @@
 from typing import List
-from fastapi import FastAPI
 from pydantic import BaseModel
-from geopy.geocoders import Nominatim
-import geopy.distance
 
 class Restaurant(BaseModel):
     nama_restoran: str
