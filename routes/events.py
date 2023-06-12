@@ -2,8 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status, File, Up
 from fastapi.responses import JSONResponse
 from models.events import ReccomendRequest
 from services.auth import AuthHandler, JWTBearer
-from services.database_manager import dbInstance
-from sqlalchemy import text
 from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 import io
@@ -118,7 +116,7 @@ async def getRecommendation(request_data: ReccomendRequest, user_id: str = Depen
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
 
-@event_router.post("/get-recommendation-history")
+@event_router.get("/get-recommendation-history")
 async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
     try:
         # Query the Firestore collection for user_recommendation with matching user_id

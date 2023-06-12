@@ -1,6 +1,5 @@
 from uuid import uuid4
 from fastapi import APIRouter, Depends, Request, status
-from fastapi import FastAPI, Body
 from fastapi.responses import JSONResponse
 from models.users import UserRegisterModel, UserLoginSchema, users, resetPasswordSchema
 from services.auth import AuthHandler, JWTBearer
