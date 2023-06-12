@@ -236,6 +236,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
                 "doc_id": doc_ref.id,
                 "city": request_data.city,
                 "start_date": request_data.day_start,
+                "date_end" : request_data.day_end,
             }
         else:
             error_message = response.json()
