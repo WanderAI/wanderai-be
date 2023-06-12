@@ -52,7 +52,7 @@ from fastapi import HTTPException
 #         return JSONResponse(status_code=500, content={"message": str(e)})
 
 @event_router.post("/predict-image")
-async def predictImage(file: UploadFile = File(...)):
+async def predictImage(file: UploadFile = File(...), Authorize: JWTBearer = Depends(JWTBearer())):
     try:
         # Read the file content
         content = await file.read()
@@ -82,7 +82,7 @@ async def predictImage(file: UploadFile = File(...)):
         return JSONResponse(status_code=500, content={"message": str(e)})
 
 @event_router.post("/get-recommendation")
-async def getRecommendation(request_data: ReccomendRequest):
+async def getRecommendation(request_data: ReccomendRequest, Authorize: JWTBearer = Depends(JWTBearer())):
     try:
         # Convert the request data to a JSON serializable format
         json_data = request_data.dict()
