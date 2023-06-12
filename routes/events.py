@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status, File, UploadFile
 from fastapi.responses import JSONResponse
-from models.events import ReccomendRequest
+from models.events import ReccomendRequest, RandomReccomendRequest
 from services.auth import AuthHandler, JWTBearer
 from random import choice, randint
 from fastapi import FastAPI, File, UploadFile
@@ -63,7 +63,7 @@ def sanitize_objects_list(obj_list):
         sanitized_list.append(sanitized_obj)
     return sanitized_list
 
-def generate_random_combination():
+def generate_random_combination(date_start, date_end):
     # Define the valid options for each field
     valid_cities = ["Jakarta", "Bandung", "Yogyakarta", "Semarang", "Surabaya"]
     valid_costs = [1, 2, 3, 4]
@@ -72,14 +72,6 @@ def generate_random_combination():
     query = ""  # Sample query
     city = choice(valid_cities)
 
-    # Generate random start and end dates
-    current_date = datetime.now().date()
-    min_start_date = current_date + timedelta(days=3)  # Minimum start date is 3 days from now
-    max_end_date = min_start_date + timedelta(days=12)  # Maximum end date is 12 days from the minimum start date
-    n_days = randint(1, 12)
-    day_start = min_start_date + timedelta(days=randint(0, n_days-1))
-    day_end = day_start + timedelta(days=n_days)
-
     n_people = randint(2, 6)  # Assuming maximum of 10 people
     cost = choice(valid_costs)
 
@@ -87,8 +79,8 @@ def generate_random_combination():
     return {
         "query": query,
         "city": city,
-        "day_start": day_start.strftime("%d/%m/%Y"),
-        "day_end": day_end.strftime("%d/%m/%Y"),
+        "day_start": date_start,
+        "day_end": date_end,
         "n_people": n_people,
         "cost": cost
     }
@@ -124,25 +116,32 @@ async def predictImage(file: UploadFile = File(...), Authorize: JWTBearer = Depe
         return JSONResponse(status_code=500, content={"message": str(e)})
 
 @event_router.post("/recommendation-random")
-async def get_recommendation_random(user_id: str = Depends(JWTBearer())):
+async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: str = Depends(JWTBearer())):
     try:
-        request_data = generate_random_combination()
+        request_data = generate_random_combination(inputUser.day_start, inputUser.day_end)
+
         # Convert the request data to a JSON serializable format
+        json_data = {
+            "query": request_data["query"],
+            "city": request_data["city"],
+            "day_start": request_data["day_start"],
+            "day_end": request_data["day_end"],
+            "n_people": request_data["n_people"],
+            "cost": request_data["cost"]
+        }
 
         # Calculate the number of days between day_start and day_end
         day_start = datetime.strptime(request_data["day_start"], "%d/%m/%Y").date()
         day_end = datetime.strptime(request_data["day_end"], "%d/%m/%Y").date()
         n_days = (day_end - day_start).days
 
-        # Create an instance of ReccomendRequest
-        recommend_request = ReccomendRequest(
-            query=request_data["query"],
-            city=request_data["city"],
-            day_start=request_data["day_start"],
-            day_end=request_data["day_end"],
-            n_people=request_data["n_people"],
-            cost=request_data["cost"]
-        )
+        # Get the current date and time in Jakarta
+        jakarta_timezone = pytz.timezone("Asia/Jakarta")
+        current_date = datetime.now(jakarta_timezone).date()
+
+        # Check if day_start is before the current date
+        if day_start < current_date:
+            return JSONResponse(status_code=400, content={"message": "Invalid day_start", "detail": "Invalid day_start. It cannot be before the current date."})
 
         # Remove day_start and day_end from request_data
         del request_data["day_start"]
@@ -150,10 +149,6 @@ async def get_recommendation_random(user_id: str = Depends(JWTBearer())):
 
         # Update the request data with n_days
         request_data["n_days"] = n_days + 1
-
-        # Get the current date and time in Jakarta
-        jakarta_timezone = pytz.timezone("Asia/Jakarta")
-        current_date = datetime.now(jakarta_timezone)
 
         # Format the current date as "DD/MM/YYYY"
         formatted_date = current_date.strftime("%d/%m/%Y")
@@ -167,9 +162,9 @@ async def get_recommendation_random(user_id: str = Depends(JWTBearer())):
             doc_ref = db.collection('user_recommendation').document()
             doc_ref.set({
                 "user_id": user_id,
-                "city": recommend_request.city,
-                "date_start": recommend_request.day_start,
-                "date_end": recommend_request.day_end,
+                "city": json_data["city"],
+                "date_start": json_data["day_start"],
+                "date_end": json_data["day_end"],
                 "data": response.text,
                 "created_date": formatted_date,
             })
@@ -177,8 +172,8 @@ async def get_recommendation_random(user_id: str = Depends(JWTBearer())):
             # Return the response content
             return {
                 "doc_id": doc_ref.id,
-                "city": recommend_request.city,
-                "start_date": recommend_request.day_start,
+                "city": json_data["city"],
+                "start_date": json_data["day_start"],
             }
         else:
             error_message = response.json()
@@ -186,6 +181,7 @@ async def get_recommendation_random(user_id: str = Depends(JWTBearer())):
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
+
 
 
 @event_router.post("/recommendation-by-payload")
@@ -199,8 +195,13 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
         day_end = datetime.strptime(request_data.day_end, "%d/%m/%Y").date()
         n_days = (day_end - day_start).days
 
-        day_start = json_data["day_start"]
-        day_end = json_data["day_end"]
+        # Get the current date and time in Jakarta
+        jakarta_timezone = pytz.timezone("Asia/Jakarta")
+        current_date = datetime.now(jakarta_timezone).date()
+
+        # Check if day_start is before the current date
+        if day_start < current_date:
+            return JSONResponse(status_code=400, content={"message": "Invalid day_start", "detail": "Invalid day_start. It cannot be before the current date."})
 
         # Remove day_start and day_end from json_data
         del json_data["day_start"]
@@ -208,10 +209,6 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
 
         # Update the request data with n_days
         json_data["n_days"] = n_days + 1
-
-        # Get the current date and time in Jakarta
-        jakarta_timezone = pytz.timezone("Asia/Jakarta")
-        current_date = datetime.now(jakarta_timezone)
 
         # Format the current date as "DD/MM/YYYY"
         formatted_date = current_date.strftime("%d/%m/%Y")
@@ -226,8 +223,8 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
             doc_ref.set({
                 "user_id": user_id,
                 "city": request_data.city,
-                "date_start": day_start,
-                "date_end" : day_end,
+                "date_start": request_data.day_start,
+                "date_end" : request_data.day_end,
                 "data": response.text,
                 "created_date": formatted_date,
             })
@@ -236,7 +233,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
             return {
                 "doc_id": doc_ref.id,
                 "city": request_data.city,
-                "start_date": day_start,
+                "start_date": request_data.day_start,
             }
         else:
             error_message = response.json()
@@ -244,6 +241,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
+
 
 
 @event_router.get("/list-recommendation-history")
