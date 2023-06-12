@@ -93,7 +93,7 @@ def generate_random_combination():
         "cost": cost
     }
 
-@event_router.post("/predict-image")
+@event_router.post("/recommendation-by-image")
 async def predictImage(file: UploadFile = File(...), Authorize: JWTBearer = Depends(JWTBearer())):
     try:
         # Read the file content
@@ -123,7 +123,7 @@ async def predictImage(file: UploadFile = File(...), Authorize: JWTBearer = Depe
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
 
-@event_router.post("/get-recommendation-random")
+@event_router.post("/recommendation-random")
 async def get_recommendation_random(user_id: str = Depends(JWTBearer())):
     try:
         request_data = generate_random_combination()
@@ -188,7 +188,7 @@ async def get_recommendation_random(user_id: str = Depends(JWTBearer())):
         return JSONResponse(status_code=500, content={"message": str(e)})
 
 
-@event_router.post("/get-recommendation")
+@event_router.post("/recommendation-by-payload")
 async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depends(JWTBearer())):
     try:
         # Convert the request data to a JSON serializable format
@@ -246,7 +246,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
         return JSONResponse(status_code=500, content={"message": str(e)})
 
 
-@event_router.get("/get-recommendation-history-list")
+@event_router.get("/list-recommendation-history")
 async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
     try:
         query = db.collection('user_recommendation').where("user_id", "==", user_id)
@@ -267,7 +267,7 @@ async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
 
-@event_router.get("/get-recommendation-history-detail/{doc_id}")
+@event_router.get("/recommendation-detail/{doc_id}")
 async def getRecommendationHistory(doc_id, Authorize: JWTBearer = Depends(JWTBearer())):
     try:
         # Get the Firestore document with the specified ID
