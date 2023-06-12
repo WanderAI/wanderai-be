@@ -268,7 +268,7 @@ async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
         return JSONResponse(status_code=500, content={"message": str(e)})
 
 @event_router.get("/get-recommendation-history-detail/{doc_id}")
-async def getRecommendationHistory(doc_id):
+async def getRecommendationHistory(doc_id, Authorize: JWTBearer = Depends(JWTBearer())):
     try:
         # Get the Firestore document with the specified ID
         doc_ref = db.collection('user_recommendation').document(doc_id)
