@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status, File, Up
 from fastapi.responses import JSONResponse
 from models.events import ReccomendRequest
 from services.auth import AuthHandler, JWTBearer
+from random import choice, randint
 from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 import io
 import os
 import pytz
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import firebase_admin
 from firebase_admin import credentials
@@ -49,6 +50,49 @@ def sanitize_data(json_object):
 
     return json_object
 
+def sanitize_objects_list(obj_list):
+    sanitized_list = []
+    for obj in obj_list:
+        sanitized_obj = {}
+        if "doc_id" in obj:
+            sanitized_obj["doc_id"] = obj["doc_id"]
+        if "city" in obj:
+            sanitized_obj["city"] = obj["city"]
+        if "date_start" in obj:
+            sanitized_obj["date_start"] = obj["date_start"]
+        sanitized_list.append(sanitized_obj)
+    return sanitized_list
+
+def generate_random_combination():
+    # Define the valid options for each field
+    valid_cities = ["Jakarta", "Bandung", "Yogyakarta", "Semarang", "Surabaya"]
+    valid_costs = [1, 2, 3, 4]
+
+    # Generate a random combination
+    query = ""  # Sample query
+    city = choice(valid_cities)
+
+    # Generate random start and end dates
+    current_date = datetime.now().date()
+    min_start_date = current_date + timedelta(days=3)  # Minimum start date is 3 days from now
+    max_end_date = min_start_date + timedelta(days=12)  # Maximum end date is 12 days from the minimum start date
+    n_days = randint(1, 12)
+    day_start = min_start_date + timedelta(days=randint(0, n_days-1))
+    day_end = day_start + timedelta(days=n_days)
+
+    n_people = randint(2, 6)  # Assuming maximum of 10 people
+    cost = choice(valid_costs)
+
+    # Return the random combination as a dictionary
+    return {
+        "query": query,
+        "city": city,
+        "day_start": day_start.strftime("%d/%m/%Y"),
+        "day_end": day_end.strftime("%d/%m/%Y"),
+        "n_people": n_people,
+        "cost": cost
+    }
+
 @event_router.post("/predict-image")
 async def predictImage(file: UploadFile = File(...), Authorize: JWTBearer = Depends(JWTBearer())):
     try:
@@ -79,11 +123,91 @@ async def predictImage(file: UploadFile = File(...), Authorize: JWTBearer = Depe
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
 
+@event_router.post("/get-recommendation-random")
+async def get_recommendation_random(user_id: str = Depends(JWTBearer())):
+    try:
+        request_data = generate_random_combination()
+        # Convert the request data to a JSON serializable format
+
+        # Calculate the number of days between day_start and day_end
+        day_start = datetime.strptime(request_data["day_start"], "%d/%m/%Y").date()
+        day_end = datetime.strptime(request_data["day_end"], "%d/%m/%Y").date()
+        n_days = (day_end - day_start).days
+
+        # Create an instance of ReccomendRequest
+        recommend_request = ReccomendRequest(
+            query=request_data["query"],
+            city=request_data["city"],
+            day_start=request_data["day_start"],
+            day_end=request_data["day_end"],
+            n_people=request_data["n_people"],
+            cost=request_data["cost"]
+        )
+
+        # Remove day_start and day_end from request_data
+        del request_data["day_start"]
+        del request_data["day_end"]
+
+        # Update the request data with n_days
+        request_data["n_days"] = n_days + 1
+
+        # Get the current date and time in Jakarta
+        jakarta_timezone = pytz.timezone("Asia/Jakarta")
+        current_date = datetime.now(jakarta_timezone)
+
+        # Format the current date as "DD/MM/YYYY"
+        formatted_date = current_date.strftime("%d/%m/%Y")
+
+        # Make a POST request to the API endpoint
+        response = requests.post("https://reccom-production-nzyzq3cmra-et.a.run.app/recommend", json=request_data)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Store the response as a string in Firestore using the user's UID as the document ID
+            doc_ref = db.collection('user_recommendation').document()
+            doc_ref.set({
+                "user_id": user_id,
+                "city": recommend_request.city,
+                "date_start": recommend_request.day_start,
+                "date_end": recommend_request.day_end,
+                "data": response.text,
+                "created_date": formatted_date,
+            })
+
+            # Return the response content
+            return {
+                "doc_id": doc_ref.id,
+                "city": recommend_request.city,
+                "start_date": recommend_request.day_start,
+            }
+        else:
+            error_message = response.json()
+            return JSONResponse(status_code=response.status_code, content=error_message)
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": str(e)})
+
+
 @event_router.post("/get-recommendation")
-async def getRecommendation(request_data: ReccomendRequest, user_id: str = Depends(JWTBearer())):
+async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depends(JWTBearer())):
     try:
         # Convert the request data to a JSON serializable format
         json_data = request_data.dict()
+
+        # Calculate the number of days between day_start and day_end
+        day_start = datetime.strptime(request_data.day_start, "%d/%m/%Y").date()
+        day_end = datetime.strptime(request_data.day_end, "%d/%m/%Y").date()
+        n_days = (day_end - day_start).days
+
+        day_start = json_data["day_start"]
+        day_end = json_data["day_end"]
+
+        # Remove day_start and day_end from json_data
+        del json_data["day_start"]
+        del json_data["day_end"]
+
+        # Update the request data with n_days
+        json_data["n_days"] = n_days + 1
 
         # Get the current date and time in Jakarta
         jakarta_timezone = pytz.timezone("Asia/Jakarta")
@@ -97,18 +221,23 @@ async def getRecommendation(request_data: ReccomendRequest, user_id: str = Depen
 
         # Check if the request was successful
         if response.status_code == 200:
-
             # Store the response as a string in Firestore using the user's UID as the document ID
             doc_ref = db.collection('user_recommendation').document()
             doc_ref.set({
                 "user_id": user_id,
                 "city": request_data.city,
+                "date_start": day_start,
+                "date_end" : day_end,
                 "data": response.text,
-                "created_date": formatted_date
+                "created_date": formatted_date,
             })
 
             # Return the response content
-            return response.json()
+            return {
+                "doc_id": doc_ref.id,
+                "city": request_data.city,
+                "start_date": day_start,
+            }
         else:
             error_message = response.json()
             return JSONResponse(status_code=response.status_code, content=error_message)
@@ -116,21 +245,41 @@ async def getRecommendation(request_data: ReccomendRequest, user_id: str = Depen
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
 
-@event_router.get("/get-recommendation-history")
+
+@event_router.get("/get-recommendation-history-list")
 async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
     try:
-        # Query the Firestore collection for user_recommendation with matching user_id
         query = db.collection('user_recommendation').where("user_id", "==", user_id)
         results = query.get()
 
         recommendation_history = []
         for doc in results:
             recommendation_data = doc.to_dict()
+            recommendation_data['doc_id'] = doc.id  # Add the document ID to the recommendation data
             sanitized_data = sanitize_data(recommendation_data)
             recommendation_history.append(sanitized_data)
 
         # Return the recommendation history
-        return recommendation_history
+
+        final_data = sanitize_objects_list(recommendation_history)
+        return final_data
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
+
+@event_router.get("/get-recommendation-history-detail/{doc_id}")
+async def getRecommendationHistory(doc_id):
+    try:
+        # Get the Firestore document with the specified ID
+        doc_ref = db.collection('user_recommendation').document(doc_id)
+        results = doc_ref.get()
+
+        recommendation_data = results.to_dict()
+        sanitized_data = sanitize_data(recommendation_data)
+
+        # Return the recommendation history
+        return sanitized_data
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": str(e)})
+
