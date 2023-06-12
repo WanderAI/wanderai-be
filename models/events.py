@@ -39,3 +39,15 @@ class ReccomendRequest(BaseModel):
                 "cost": 3
             }
         }
+
+class RandomReccomendRequest(BaseModel):
+    day_start: str = Field(..., example="01/06/2023", description="Format: dd/mm/yyyy")
+    day_end: str = Field(..., example="05/06/2023", description="Format: dd/mm/yyyy")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "day_start": "01/06/2023",
+                "day_end": "05/06/2023",
+            }
+        }
