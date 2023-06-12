@@ -176,6 +176,7 @@ async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: 
                 "doc_id": doc_ref.id,
                 "city": json_data["city"],
                 "start_date": json_data["day_start"],
+                "date_end": json_data["day_end"],
             }
         else:
             error_message = response.json()
