@@ -141,7 +141,7 @@ async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: 
 
         # Check if day_start is before the current date
         if day_start < current_date:
-            return JSONResponse(status_code=400, content={"message": "Invalid day_start", "detail": "Invalid day_start. It cannot be before the current date."}
+            return JSONResponse(status_code=400, content={"message": "Invalid day_start", "detail": "Invalid day_start. It cannot be before the current date."})
 
         # Remove day_start and day_end from request_data
         del request_data["day_start"]
@@ -201,7 +201,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
 
         # Check if day_start is before the current date
         if day_start < current_date:
-            return JSONResponse(status_code=400, content={"message": "Invalid day_start", "detail": "Invalid day_start. It cannot be before the current date."}
+            return JSONResponse(status_code=400, content={"message": "Invalid day_start", "detail": "Invalid day_start. It cannot be before the current date."})
 
         # Remove day_start and day_end from json_data
         del json_data["day_start"]
