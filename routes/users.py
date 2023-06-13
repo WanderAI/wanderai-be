@@ -96,7 +96,7 @@ def login(inputUser: resetPasswordSchema, user_id: str = Depends(JWTBearer())):
         update_query = text("UPDATE user SET password=:password WHERE uid=:uid")
         dbInstance.conn.execute(update_query, {"password": hashed_new_password, "uid": user_id})
         return {
-            "message": 'Success',
+            "message": 'success',
         }
     return JSONResponse(status_code=400, content={"message": 'Email tidak terdaftar!'})
 
