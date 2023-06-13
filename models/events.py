@@ -33,8 +33,8 @@ class ReccomendRequest(BaseModel):
             "example": {
                 "query": "Tempat untuk menikmati suasana alam",
                 "city": "Bandung",
-                "day_start": "01/06/2023",
-                "day_end": "05/06/2023",
+                "day_start": "01/08/2023",
+                "day_end": "05/08/2023",
                 "n_people": 2,
                 "cost": 3
             }
@@ -47,7 +47,7 @@ class RandomReccomendRequest(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "day_start": "01/06/2023",
-                "day_end": "05/06/2023",
+                "day_start": "01/08/2023",
+                "day_end": "05/08/2023",
             }
         }

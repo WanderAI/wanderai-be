@@ -105,17 +105,17 @@ async def predictImage(file: UploadFile = File(...), Authorize: JWTBearer = Depe
         # Check if the request was successful
         if response.status_code == 200:
             # Return the response content
-            return response.json()
+            return {"message": "success", "data": response.json()}
         else:
             # Return an error message if the request failed
             error_message = response.json()
-            return JSONResponse(status_code=response.status_code, content=error_message)
+            return JSONResponse(status_code=response.status_code, content={"message": "Request failed", "data": error_message})
 
     except ValueError as e:
         return JSONResponse(status_code=401, content={"message": str(e), "detail": "File format should be image format."})
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": str(e)})
+        return JSONResponse(status_code=500, content={"message": "Internal server error", "data": str(e)})
 
 @event_router.post("/recommendation-random")
 async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: str = Depends(JWTBearer())):
@@ -173,19 +173,20 @@ async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: 
 
             # Return the response content
             return {
-                "doc_id": doc_ref.id,
-                "city": json_data["city"],
-                "start_date": json_data["day_start"],
-                "date_end": json_data["day_end"],
+                "message": "success",
+                "data": {
+                    "doc_id": doc_ref.id,
+                    "city": json_data["city"],
+                    "start_date": json_data["day_start"],
+                    "date_end": json_data["day_end"],
+                }
             }
         else:
             error_message = response.json()
-            return JSONResponse(status_code=response.status_code, content=error_message)
+            return JSONResponse(status_code=response.status_code, content={"message": "Request failed", "data": error_message})
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": str(e)})
-
-
+        return JSONResponse(status_code=500, content={"message": "Internal server error", "data": str(e)})
 
 @event_router.post("/recommendation-by-payload")
 async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depends(JWTBearer())):
@@ -227,26 +228,27 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
                 "user_id": user_id,
                 "city": request_data.city,
                 "date_start": request_data.day_start,
-                "date_end" : request_data.day_end,
+                "date_end": request_data.day_end,
                 "data": response.text,
                 "created_date": formatted_date,
             })
 
             # Return the response content
             return {
-                "doc_id": doc_ref.id,
-                "city": request_data.city,
-                "start_date": request_data.day_start,
-                "date_end" : request_data.day_end,
+                "message": "success",
+                "data": {
+                    "doc_id": doc_ref.id,
+                    "city": request_data.city,
+                    "start_date": request_data.day_start,
+                    "date_end": request_data.day_end,
+                }
             }
         else:
             error_message = response.json()
-            return JSONResponse(status_code=response.status_code, content=error_message)
+            return JSONResponse(status_code=response.status_code, content={"message": "Request failed", "data": error_message})
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": str(e)})
-
-
+        return JSONResponse(status_code=500, content={"message": "Internal server error", "data": str(e)})
 
 @event_router.get("/list-recommendation-history")
 async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
@@ -262,12 +264,11 @@ async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
             recommendation_history.append(sanitized_data)
 
         # Return the recommendation history
-
         final_data = sanitize_objects_list(recommendation_history)
-        return final_data
+        return {"message": "success", "data": final_data}
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": str(e)})
+        return JSONResponse(status_code=500, content={"message": "Internal server error", "data": str(e)})
 
 @event_router.get("/recommendation-detail/{doc_id}")
 async def getRecommendationHistory(doc_id, Authorize: JWTBearer = Depends(JWTBearer())):
@@ -280,8 +281,7 @@ async def getRecommendationHistory(doc_id, Authorize: JWTBearer = Depends(JWTBea
         sanitized_data = sanitize_data(recommendation_data)
 
         # Return the recommendation history
-        return sanitized_data
+        return {"message": "success", "data": sanitized_data}
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
-
