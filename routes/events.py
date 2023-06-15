@@ -177,7 +177,7 @@ async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: 
                 "data": {
                     "doc_id": doc_ref.id,
                     "city": json_data["city"],
-                    "start_date": json_data["day_start"],
+                    "date_start": json_data["day_start"],
                     "date_end": json_data["day_end"],
                 }
             }
@@ -239,7 +239,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
                 "data": {
                     "doc_id": doc_ref.id,
                     "city": request_data.city,
-                    "start_date": request_data.day_start,
+                    "date_start": request_data.day_start,
                     "date_end": request_data.day_end,
                 }
             }
