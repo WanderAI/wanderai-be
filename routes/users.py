@@ -1,7 +1,7 @@
 from uuid import uuid4
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status, Query
 from fastapi.responses import JSONResponse
-from models.users import UserRegisterModel, UserLoginSchema, users, resetPasswordSchema
+from models.users import UserRegisterModel, UserLoginSchema, users, resetPasswordSchema, TokenStatus
 from services.auth import AuthHandler, JWTBearer
 from services.database_manager import dbInstance
 from sqlalchemy import text, exc
@@ -85,7 +85,7 @@ def login(inputUser: UserLoginSchema):
     return JSONResponse(status_code=400, content={"message": 'Email tidak terdaftar!'})
 
 @user_router.post('/reset-password')
-def login(inputUser: resetPasswordSchema, user_id: str = Depends(JWTBearer())):
+def resetPassword(inputUser: resetPasswordSchema, user_id: str = Depends(JWTBearer())):
 
     hashed_new_password = AuthHandler().get_password_hash(inputUser.newPassword)
 
@@ -100,3 +100,14 @@ def login(inputUser: resetPasswordSchema, user_id: str = Depends(JWTBearer())):
         }
     return JSONResponse(status_code=400, content={"message": 'Email tidak terdaftar!'})
 
+@user_router.post('', response_model=dict)
+def token_checker(user_id: str = Depends(JWTBearer())):
+    # decoded_token = AuthHandler().decode_token(token)
+    # expiration_date = datetime.utcfromtimestamp(decoded_token['exp'])
+    # user_id = decoded_token['sub']
+    return {
+        "message": "success",
+        "data": {
+            "user_id": user_id,
+        }
+    }
