@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class UserRegisterModel(BaseModel):
     name: str
@@ -41,3 +42,8 @@ class resetPasswordSchema(BaseModel):
         }
         
 users = []
+
+class TokenStatus(BaseModel):
+    token: str
+    is_expired: bool
+    expiration_date: datetime
