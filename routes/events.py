@@ -58,6 +58,8 @@ def sanitize_objects_list(obj_list):
             sanitized_obj["doc_id"] = obj["doc_id"]
         if "city" in obj:
             sanitized_obj["city"] = obj["city"]
+        if "created_date" in obj:
+            sanitized_obj["created_date"] = obj["created_date"]
         if "date_start" in obj:
             sanitized_obj["date_start"] = obj["date_start"]
         if "date_end" in obj:
@@ -253,7 +255,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
 @event_router.get("/list-recommendation-history")
 async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
     try:
-        query = db.collection('user_recommendation').where("user_id", "==", user_id)
+        query = db.collection('user_recommendation').where("user_id", "==", user_id).order_by("created_date", direction=firestore.Query.DESCENDING)
         results = query.get()
 
         recommendation_history = []
@@ -268,7 +270,7 @@ async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
         return {"message": "success", "data": final_data}
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": "Internal server error", "data": str(e)})
+        return JSONResponse(status_code=500, content={"message": "failed", "detail": str(e)})
 
 @event_router.get("/recommendation-detail/{doc_id}")
 async def getRecommendationHistory(doc_id, Authorize: JWTBearer = Depends(JWTBearer())):
