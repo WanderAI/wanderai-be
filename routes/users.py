@@ -102,12 +102,13 @@ def resetPassword(inputUser: resetPasswordSchema, user_id: str = Depends(JWTBear
 
 @user_router.post('', response_model=dict)
 def token_checker(user_id: str = Depends(JWTBearer())):
-    # decoded_token = AuthHandler().decode_token(token)
-    # expiration_date = datetime.utcfromtimestamp(decoded_token['exp'])
-    # user_id = decoded_token['sub']
-    return {
-        "message": "success",
-        "data": {
-            "user_id": user_id,
+    users = dbInstance.conn.execute(text("SELECT email, password, name, uid FROM user WHERE uid=:uid"), {"uid": user_id})
+    for user in users:
+        return {
+            "data": {
+                "user_id": user[3],
+                "email": user[0],
+                "name": user[2]
+            },
+            "message": 'Success',
         }
-    }
