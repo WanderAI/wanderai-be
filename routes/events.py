@@ -141,10 +141,10 @@ async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: 
 
         # Get the current date and time in Jakarta
         jakarta_timezone = pytz.timezone("Asia/Jakarta")
-        current_date = datetime.now(jakarta_timezone).date()
+        current_datetime = datetime.now(jakarta_timezone)
 
         # Check if day_start is before the current date
-        if day_start < current_date:
+        if day_start < current_datetime.date():
             return JSONResponse(status_code=400, content={"message": "Invalid day_start", "detail": "Invalid day_start. It cannot be before the current date."})
 
         # Remove day_start and day_end from request_data
@@ -155,7 +155,7 @@ async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: 
         request_data["n_days"] = n_days + 1
 
         # Format the current date as "DD/MM/YYYY"
-        formatted_date = current_date.strftime("%d/%m/%Y")
+        formatted_date = current_datetime.strftime("%d/%m/%Y %H:%M:%S")
 
         # Make a POST request to the API endpoint
         response = requests.post("https://reccom-production-nzyzq3cmra-et.a.run.app/recommend", json=request_data)
@@ -190,6 +190,7 @@ async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: 
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": "Internal server error", "data": str(e)})
 
+
 @event_router.post("/recommendation-by-payload")
 async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depends(JWTBearer())):
     try:
@@ -203,10 +204,10 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
 
         # Get the current date and time in Jakarta
         jakarta_timezone = pytz.timezone("Asia/Jakarta")
-        current_date = datetime.now(jakarta_timezone).date()
+        current_datetime = datetime.now(jakarta_timezone)
 
         # Check if day_start is before the current date
-        if day_start < current_date:
+        if day_start < current_datetime.date():
             return JSONResponse(status_code=400, content={"message": "Invalid day_start", "detail": "Invalid day_start. It cannot be before the current date."})
 
         # Remove day_start and day_end from json_data
@@ -217,7 +218,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
         json_data["n_days"] = n_days + 1
 
         # Format the current date as "DD/MM/YYYY"
-        formatted_date = current_date.strftime("%d/%m/%Y")
+        formatted_date = current_datetime.strftime("%d/%m/%Y %H:%M:%S")
 
         # Make a POST request to the API endpoint
         response = requests.post("https://reccom-production-nzyzq3cmra-et.a.run.app/recommend", json=json_data)
@@ -262,6 +263,8 @@ async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
         for doc in results:
             recommendation_data = doc.to_dict()
             recommendation_data['doc_id'] = doc.id  # Add the document ID to the recommendation data
+            # Extract the date part from created_date string in "DD/MM/YYYY" format
+            recommendation_data['created_date'] = recommendation_data['created_date'].split()[0]
             sanitized_data = sanitize_data(recommendation_data)
             recommendation_history.append(sanitized_data)
 
