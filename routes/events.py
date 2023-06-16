@@ -56,6 +56,8 @@ def sanitize_objects_list(obj_list):
         sanitized_obj = {}
         if "doc_id" in obj:
             sanitized_obj["doc_id"] = obj["doc_id"]
+        if "description" in obj:
+            sanitized_obj["description"] = obj["description"]
         if "city" in obj:
             sanitized_obj["city"] = obj["city"]
         if "created_date" in obj:
@@ -167,6 +169,7 @@ async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: 
             doc_ref.set({
                 "user_id": user_id,
                 "city": json_data["city"],
+                "description": request_data["query"],
                 "date_start": json_data["day_start"],
                 "date_end": json_data["day_end"],
                 "data": response.text,
@@ -230,6 +233,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
             doc_ref.set({
                 "user_id": user_id,
                 "city": request_data.city,
+                "description": request_data.query,
                 "date_start": request_data.day_start,
                 "date_end": request_data.day_end,
                 "data": response.text,
