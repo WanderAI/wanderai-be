@@ -111,13 +111,13 @@ async def predictImage(file: UploadFile = File(...), Authorize: JWTBearer = Depe
         else:
             # Return an error message if the request failed
             error_message = response.json()
-            return JSONResponse(status_code=response.status_code, content={"message": "Request failed", "data": error_message})
+            {"message": error_message, "data": {}}
 
     except ValueError as e:
-        return JSONResponse(status_code=401, content={"message": str(e), "detail": "File format should be image format."})
+        return JSONResponse(status_code=401, content={"message": str(e), "data": {}})
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": "Internal server error", "data": str(e)})
+        return JSONResponse(status_code=500, content={"message": str(e), "data": {}})
 
 @event_router.post("/recommendation-random")
 async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: str = Depends(JWTBearer())):
@@ -145,7 +145,7 @@ async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: 
 
         # Check if day_start is before the current date
         if day_start < current_datetime.date():
-            return JSONResponse(status_code=400, content={"message": "Invalid day_start", "detail": "Invalid day_start. It cannot be before the current date."})
+            return JSONResponse(status_code=400, content={"message": "Invalid day_start", "data": {}})
 
         # Remove day_start and day_end from request_data
         del request_data["day_start"]
@@ -185,10 +185,10 @@ async def get_recommendation_random(inputUser: RandomReccomendRequest, user_id: 
             }
         else:
             error_message = response.json()
-            return JSONResponse(status_code=response.status_code, content={"message": "Request failed", "data": error_message})
+            return JSONResponse(status_code=response.status_code, content={"message": error_message, "data": {}})
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": "Internal server error", "data": str(e)})
+        return JSONResponse(status_code=500, content={"message":str(e), "data": {}})
 
 
 @event_router.post("/recommendation-by-payload")
@@ -208,7 +208,7 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
 
         # Check if day_start is before the current date
         if day_start < current_datetime.date():
-            return JSONResponse(status_code=400, content={"message": "Invalid day_start", "detail": "Invalid day_start. It cannot be before the current date."})
+            return JSONResponse(status_code=400, content={"message": "Invalid day_start", "data": {}})
 
         # Remove day_start and day_end from json_data
         del json_data["day_start"]
@@ -248,10 +248,10 @@ async def get_recommendation(request_data: ReccomendRequest, user_id: str = Depe
             }
         else:
             error_message = response.json()
-            return JSONResponse(status_code=response.status_code, content={"message": "Request failed", "data": error_message})
+            return JSONResponse(status_code=response.status_code, content={"message":str(e), "data": {}})
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": "Internal server error", "data": str(e)})
+        return JSONResponse(status_code=500, content={"message":str(e), "data": {}})
 
 @event_router.get("/list-recommendation-history")
 async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
@@ -273,7 +273,7 @@ async def getRecommendationHistory(user_id: str = Depends(JWTBearer())):
         return {"message": "success", "data": final_data}
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": "failed", "detail": str(e)})
+        return JSONResponse(status_code=500, content={"message": str(e), "data": {}})
 
 @event_router.get("/recommendation-detail/{doc_id}")
 async def getRecommendationHistory(doc_id, Authorize: JWTBearer = Depends(JWTBearer())):
@@ -289,4 +289,4 @@ async def getRecommendationHistory(doc_id, Authorize: JWTBearer = Depends(JWTBea
         return {"message": "success", "data": sanitized_data}
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": str(e)})
+        return JSONResponse(status_code=500, content={"message": str(e) , "data": {}})
