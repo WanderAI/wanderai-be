@@ -55,9 +55,9 @@ class JWTBearer(HTTPBearer):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer,self).__call__(request)
         if credentials:
             if not credentials.scheme == "Bearer":
-                raise HTTPException(status_code=403, message="Scheme Invalid")
+                raise HTTPException(status_code=403, detail="Scheme Invalid")
             decoded = self.authHandler.decode_token(credentials.credentials)
             if decoded is not None:
                 return decoded
-        raise HTTPException(status_code=403, message='Invalid token')
+        raise HTTPException(status_code=403, detail='Invalid token')
      
